@@ -1,6 +1,9 @@
 import fs from "fs";
 import { randomUUID } from "crypto";
 import s3 from "../../storage.js";
+import { sendToQueue } from "../../utils/rabbitmq.js";
+
+
  export async function Upload(req,res){
         try{
             const fileContent = fs.readFileSync(req.file.path);
@@ -15,6 +18,15 @@ import s3 from "../../storage.js";
             const result = await s3.upload(params).promise();
             //cleaning up temp fole
             fs.unlinkSync(req.file.path);
+
+            //send image metadata to RabbitMQ
+            await sendToQueue({
+                key:uniqueKey,
+                url:result.Location,
+                userId: req.user?.id || "anonymous",
+                uploadedAt: new Date(),
+            });
+            
             res.json({
                 message:"File uploaded successfully!",
                 fileUrl:result.Location,
