@@ -1,7 +1,9 @@
 import fs from "fs";
 import { randomUUID } from "crypto";
 import s3 from "../../storage.js";
+import { Image } from "../../models/Image.js";
 import { sendToQueue } from "../../utils/rabbitmq.js";
+
 
 
  export async function Upload(req,res){
@@ -26,9 +28,28 @@ import { sendToQueue } from "../../utils/rabbitmq.js";
                 userId: req.user?.id || "anonymous",
                 uploadedAt: new Date(),
             });
+
+            //save metadata to mongodb
+            const imageDoc = new Image({
+                key:uniqueKey,
+                originalName:req.file.originalName,
+                ownerId:req.user?.id || null, //add kr dena user after auth
+                size:req.file.mimetype,
+                url:result.Location,
+                versions:[
+                    {
+                    type:"original",
+                    key:uniqueKey,
+                    url:result.Location
+                    }
+                ],
+                status:"uploaded"
+            });
+            await imageDoc.save();
+            await sendToQueue({key:uniqueKey,ownerId:req.user?._id});
             
-            res.json({
-                message:"File uploaded successfully!",
+            res.status(200).json({
+                message:"File uploaded & metadata saved successfully!",
                 fileUrl:result.Location,
                 key:uniqueKey,
             });

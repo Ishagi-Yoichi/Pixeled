@@ -2,10 +2,9 @@ import ampq from "amqplib";
 
 let channel;
 const QUEUE = "image_tasks";
-
 export async function connectRabbitMQ(){
     try{
-        const connection = await ampq.connect(process.env.RABBITMQ_URL);
+        const connection = await ampq.connect(process.env.RABBITMQ_CONNECTION);
         channel = await connection.createChannel();
         await channel.assertQueue(QUEUE,{durable:true});
         console.log("Connected to rabbitmq and queue created");
@@ -14,15 +13,12 @@ export async function connectRabbitMQ(){
         console.error("RabbitMQ connection failed:",err);
     }
 }
-
 //send msg to queue
 export async function sendToQueue(message) {
     if (!channel) throw new Error("RabbitMQ not initialized!");
     channel.sendToQueue(QUEUE, Buffer.from(JSON.stringify(message)), { persistent: true });
-    console.log("📤 Sent to queue:", message);
+    console.log(" Sent to queue:", message);
   }
-
-
 //receive msg
 export async function receiveFromQueue(callback){
     if(!channel) throw new Error("RabbitMQ not initialized");

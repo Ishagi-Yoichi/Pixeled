@@ -29,3 +29,5 @@ const transformationSchema = new mongoose.Schema({
     visibility: { type: String, enum: ["public", "private"], default: "private" },
     status: { type: String, enum: ["uploaded", "processing", "processed", "failed"], default: "uploaded" }
   });
+
+  export const Image = mongoose.model('Image',imageSchema)
