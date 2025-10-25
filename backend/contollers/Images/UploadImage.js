@@ -28,14 +28,15 @@ import { sendToQueue } from "../../utils/rabbitmq.js";
                 userId: req.user?.id || "anonymous",
                 uploadedAt: new Date(),
             });
-
+            console.log("Uploaded file details:",req.file);
             //save metadata to mongodb
             const imageDoc = new Image({
                 key:uniqueKey,
                 originalName:req.file.originalName,
                 ownerId:req.user?.id || null, //add kr dena user after auth
-                size:req.file.mimetype,
+                size:Number(req.file.size),
                 url:result.Location,
+                contentType:String(req.file.mimetype),
                 versions:[
                     {
                     type:"original",

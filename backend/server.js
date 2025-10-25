@@ -33,7 +33,7 @@ app.get("/image/:key", async (req, res) => {
       const params = {
         Bucket: "pixeled",
         Key: key,
-        Expires: 60,
+        Expires: 300,
       };
       const url = s3.getSignedUrl("getObject", params);
       console.log("Generated URL:", url);
@@ -43,10 +43,6 @@ app.get("/image/:key", async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   });
-
-
-
-
 
   app.listen("3000", async ()=>{
     console.log(`Server started at http://localhost:3000`);
