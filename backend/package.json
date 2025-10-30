@@ -11,6 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "amqplib": "^0.10.9",
     "aws-sdk": "^2.1692.0",
     "bcrypt": "^6.0.0",

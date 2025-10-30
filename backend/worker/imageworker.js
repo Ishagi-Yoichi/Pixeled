@@ -17,7 +17,7 @@ async function startWorker() {
     console.log(" MongoDB connected (Worker)");
 
     // Connect RabbitMQ
-    const connection = await amqp.connect(process.env.RABBITMQ_URL);
+    const connection = await amqp.connect(process.env.RABBITMQ_CONNECTION);
     const channel = await connection.createChannel();
     await channel.assertQueue(queueName);
     console.log("RabbitMQ Worker listening...");

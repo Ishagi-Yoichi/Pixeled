@@ -3,56 +3,147 @@ import { randomUUID } from "crypto";
 import s3 from "../../storage.js";
 import { Image } from "../../models/Image.js";
 import { sendToQueue } from "../../utils/rabbitmq.js";
-
+import sharp from "sharp";
 
 
  export async function Upload(req,res){
         try{
+            // Extract transformation parameters from request body
+            const { height, width, format, rotation, quality } = req.body;
+            
             const fileContent = fs.readFileSync(req.file.path);
             const uniqueKey = `${randomUUID()}-${req.file.originalname}`;
+            
+            // Process image with Sharp if transformations are requested
+            let processedBuffer = fileContent;
+            let processedFormat = format || req.file.mimetype.split('/')[1];
+            
+            try {
+                let sharpInstance = sharp(fileContent);
+                
+                // Apply resize if dimensions are provided
+                if (height || width) {
+                    sharpInstance = sharpInstance.resize({
+                        width: width ? parseInt(width) : null,
+                        height: height ? parseInt(height) : null,
+                        fit: 'inside',
+                        withoutEnlargement: true
+                    });
+                }
+                
+                // Apply rotation
+                if (rotation === 'left') {
+                    sharpInstance = sharpInstance.rotate(-90);
+                } else if (rotation === 'right') {
+                    sharpInstance = sharpInstance.rotate(90);
+                }
+                
+                // Apply format conversion
+                if (format && ['jpeg', 'jpg', 'png', 'webp'].includes(format.toLowerCase())) {
+                    const formatOptions = {};
+                    
+                    // Apply quality for JPEG/WebP
+                    if ((format === 'jpeg' || format === 'jpg') && quality) {
+                        formatOptions.quality = parseInt(quality);
+                        formatOptions.mozjpeg = true;
+                    } else if (format === 'webp' && quality) {
+                        formatOptions.quality = parseInt(quality);
+                    }
+                    
+                    processedBuffer = await sharpInstance.toFormat(format, formatOptions).toBuffer();
+                } else {
+                    // Just apply resize/rotation without format change
+                    processedBuffer = await sharpInstance.toBuffer();
+                }
+            } catch (sharpError) {
+                console.error('Sharp processing error:', sharpError);
+                // Fall back to original file if processing fails
+                processedBuffer = fileContent;
+            }
+            
+            const contentType = format 
+                ? `image/${format === 'jpg' ? 'jpeg' : format}` 
+                : req.file.mimetype;
+            
             const params = {
                 Bucket: "pixeled",
                 Key:uniqueKey,
-                Body: fileContent,
-                ContentType:req.file.mimetype,
+                Body: processedBuffer,
+                ContentType: contentType,
+                ACL: 'public-read', // Make file publicly accessible
+                Metadata: {
+                    'original-filename': req.file.originalname || 'image'
+                }
             };
-            //uploadd to filebase(S3 compatiblee)
+            
+            //upload to filebase(S3 compatible)
             const result = await s3.upload(params).promise();
-            //cleaning up temp fole
+            //cleaning up temp file
             fs.unlinkSync(req.file.path);
 
-            //send image metadata to RabbitMQ
+            // Generate signed URL for accessing the file (valid for 1 hour)
+            const signedUrlParams = {
+                Bucket: "pixeled",
+                Key: uniqueKey,
+                Expires: 3600, // 1 hour
+            };
+            const signedUrl = s3.getSignedUrl("getObject", signedUrlParams);
+
+            //send image metadata to RabbitMQ with transformation parameters
             await sendToQueue({
                 key:uniqueKey,
-                url:result.Location,
+                url:signedUrl,
                 userId: req.user?.id || "anonymous",
                 uploadedAt: new Date(),
+                transformations: {
+                    height: height || null,
+                    width: width || null,
+                    format: format || null,
+                    rotation: rotation || null,
+                    quality: quality || null
+                }
             });
+            
             console.log("Uploaded file details:",req.file);
+            console.log("Transformations applied:", { height, width, format, rotation, quality });
+            
             //save metadata to mongodb
             const imageDoc = new Image({
                 key:uniqueKey,
                 originalName:req.file.originalName,
-                ownerId:req.user?.id || null, //add kr dena user after auth
+                ownerId:req.user?.id || null,
                 size:Number(req.file.size),
-                url:result.Location,
-                contentType:String(req.file.mimetype),
+                url:signedUrl,
+                contentType:contentType,
                 versions:[
                     {
                     type:"original",
                     key:uniqueKey,
-                    url:result.Location
+                    url:signedUrl
                     }
                 ],
-                status:"uploaded"
+                status:"uploaded",
+                transformations: {
+                    height: height || null,
+                    width: width || null,
+                    format: format || null,
+                    rotation: rotation || null,
+                    quality: quality || null
+                }
             });
             await imageDoc.save();
-            await sendToQueue({key:uniqueKey,ownerId:req.user?._id});
             
             res.status(200).json({
-                message:"File uploaded & metadata saved successfully!",
-                fileUrl:result.Location,
+                message:"File uploaded & processed successfully!",
+                fileUrl:signedUrl,
                 key:uniqueKey,
+                transformations: {
+                    height: height || null,
+                    width: width || null,
+                    format: format || null,
+                    rotation: rotation || null,
+                    quality: quality || null
+                }
             });
         }
     catch(error){
