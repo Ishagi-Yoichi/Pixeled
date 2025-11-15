@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile, toBlobURL } from "@ffmpeg/util";
 
+
 const ffmpeg = new FFmpeg({ log: true });
 
 function VideoConverter() {
@@ -20,16 +21,27 @@ function VideoConverter() {
     if (!inputFile) return;
 
     setLoading(true);
+
+    const env = checkEnvironment();
+    console.log('Environment check:' , env);
+    if (!env.crossOriginIsolated) {
+      setStatus("Error: Cross-origin isolation not enabled. Check vite.config.js headers.");
+      setLoading(false);
+      return;
+    }
+
     setStatus("Initializing FFmpeg...");
 
     try {
       //  Load FFmpeg from /public/ffmpeg/ (local)
+      
       if (!ffmpeg.loaded) {
         setStatus("Loading FFmpeg core...");
+        const baseURL = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
+        console.log('Fetching from:', baseURL);
         await ffmpeg.load({
-          coreURL: await toBlobURL("/ffmpeg/ffmpeg-core.mjs", "application/javascript"),
-          workerURL: await toBlobURL("/ffmpeg/ffmpeg-core.worker.mjs", "application/javascript"),
-          wasmURL: await toBlobURL("/ffmpeg/ffmpeg-core.wasm", "application/wasm"),
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
         });
         console.log("FFmpeg loaded successfully");
       }
