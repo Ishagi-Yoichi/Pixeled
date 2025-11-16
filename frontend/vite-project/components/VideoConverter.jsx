@@ -77,55 +77,50 @@ function VideoConverter() {
   };
 
   return (
-    <div style={{ padding: 20, fontFamily: "sans-serif" }}>
-      <h1>Video Converter (MP4 to WebM)</h1>
-
+    <>
+    <div className="p-5 font-sans bg-zinc-900 h-screen text-white">
+      <h1 className="text-7xl p-4 font-semibold mb-2 ">Video Transformations</h1>
+  
       {/* File input */}
-      <input 
-        type="file" 
-        accept="video/mp4,video/*" 
-        onChange={handleFileChange} 
+      <input
+        type="file"
+        accept="video/mp4,video/*"
+        onChange={handleFileChange}
+        name="Import Video"
+        className="text-white bg-zinc-800 p-2 rounded-md h-[100px] text-center cursor-pointer"
       />
+
+      <p className="text-white p-4 mt-4 text-xl">Choose your Service</p>
       
+  
       {/* Convert button */}
       <button
         onClick={convertVideo}
         disabled={!inputFile || loading}
-        style={{ marginLeft: 10, padding: "6px 12px" }}
+        className="ml-2.5 py-1.5 px-3 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? "Processing..." : "Convert"}
       </button>
-
+  
       {/* Status message */}
-      {status && <p style={{ marginTop: 10 }}>{status}</p>}
-
+      {status && <p className="mt-2.5">{status}</p>}
+  
       {/* Output video preview and download */}
       {outputUrl && (
-        <div style={{ marginTop: 20 }}>
-          <video 
-            src={outputUrl} 
-            controls 
-            width="400" 
-            style={{ display: 'block' }} 
-          />
-          <a 
-            href={outputUrl} 
+        <div className="mt-5">
+          <video src={outputUrl} controls className="block w-[400px]" />
+          <a
+            href={outputUrl}
             download="converted.webm"
-            style={{ 
-              display: 'inline-block', 
-              marginTop: 10, 
-              padding: '8px 12px', 
-              background: '#007bff', 
-              color: 'white', 
-              textDecoration: 'none', 
-              borderRadius: 4 
-            }}
+            className="inline-block mt-2.5 px-3 py-2 bg-blue-600 text-white no-underline rounded hover:bg-blue-700"
           >
             Download WebM
           </a>
         </div>
       )}
     </div>
+  </>
+  
   );
 }
 
