@@ -69,11 +69,36 @@ function VideoConverter() {
       // Create downloadable blob URL
       const url = URL.createObjectURL(new Blob([data.buffer], { type: "video/webm" }));
       setOutputUrl(url);
+
+      // Clean up temporary files from virtual file system
+      try {
+        await ffmpeg.deleteFile("input.mp4");
+      } catch (e) {
+        console.log("Cleanup error (ignorable):", e.message);
+      }
+      try {
+        await ffmpeg.deleteFile("output.webm");
+      } catch (e) {
+        console.log("Cleanup error (ignorable):", e.message);
+      }
+
       setStatus("Conversion complete!");
       
     } catch (err) {
       console.error("FFmpeg error:", err);
       setStatus("Error: " + (err?.message || String(err)));
+      
+      // Clean up on error as well
+      try {
+        await ffmpeg.deleteFile("input.mp4");
+      } catch (e) {
+        console.log("Cleanup error (ignorable):", e.message);
+      }
+      try {
+        await ffmpeg.deleteFile("output.webm");
+      } catch (e) {
+        console.log("Cleanup error (ignorable):", e.message);
+      }
     } finally {
       setLoading(false);
     }
