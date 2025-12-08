@@ -142,9 +142,12 @@ function VideoConverter() {
       try {
         // Extract with fps filter - this is more reliable
         await ffmpeg.exec([
+          "-threads","1",
+          "-vsync", "2",                                 // reduces RAM spikes
           "-i", "input.mp4",
-          "-vf", `fps=1/${intervalSeconds},scale=320:-1`,  // Scale down + extract at interval
-          "-q:v", "8",                      // Lower quality = less memory
+          "-vf", `fps=1/${intervalSeconds},scale=960:-1`,  // Scale down + extract at interval
+          "-q:v", "12", 
+          "-preset","ultrafast",                     // Lower quality = less memory
           "-frames:v", "20",                // Maximum 20 frames to prevent overflow
           "thumb_%03d.jpg"
         ]);
