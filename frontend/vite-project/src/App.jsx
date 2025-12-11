@@ -4,7 +4,8 @@ import {BrowserRouter , Route , Routes} from 'react-router-dom';
 import Header from '../components/Header'
 import Image_Hero from '../components/Image_Hero';
 import Hero from '../components/Hero';
-import VideoConverter from '../components/VideoConverter';
+import VideoArena from '../components/VideoArena';
+
 function App() {
   
 
@@ -22,8 +23,8 @@ function App() {
               </div>
             </>
           } />
-          <Route path="/home" element={<Image_Hero />} />
-          <Route path="/video" element={<VideoConverter />} />
+          <Route path="/image" element={<Image_Hero />} />
+          <Route path="/video" element={<VideoArena />} />
       </Routes>
     </BrowserRouter>
     </>
