@@ -110,9 +110,10 @@ export default function Image_Hero(){
 
     return(
         <>
-         <div className='min-h-screen bg-zinc-900 p-6 '>
-         <div className=' mx-auto space-y-6 '>
-             <div className='bg-gray-100 flex flex-col max-w-4xl justify-between ml-72  p-4 rounded-2xl min-h-[600px]'>
+         <div className='min-h-screen bg-black  flex items-center '>
+         <div className=' mx-auto space-y-6  '>
+            <h1 className='text-white text-9xl -mt-28 -ml-44 text-center bitcount-prop-single-uniqifier'>Image Arena</h1>
+             <div className='bg-gray-100 flex flex-col w-5xl justify-between -ml-22  p-4 rounded-2xl min-h-[600px]'>
             <div className='h-[250px] flex items-center gap-18 w-full '>
                 <input
                     ref={fileInputRef}

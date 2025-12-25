@@ -28,14 +28,17 @@ import sharp from "sharp";
                         height: height ? parseInt(height) : null,
                         fit: 'inside',
                         withoutEnlargement: true
-                    });
+                    })
+                    .sharpen()
                 }
                 
                 // Apply rotation
                 if (rotation === 'left') {
-                    sharpInstance = sharpInstance.rotate(-90);
+                    sharpInstance = sharpInstance.rotate(-90)
+                                                 .sharpen();
                 } else if (rotation === 'right') {
-                    sharpInstance = sharpInstance.rotate(90);
+                    sharpInstance = sharpInstance.rotate(90)
+                                                 .sharpen();
                 }
                 
                 // Apply format conversion
@@ -50,10 +53,11 @@ import sharp from "sharp";
                         formatOptions.quality = parseInt(quality);
                     }
                     
-                    processedBuffer = await sharpInstance.toFormat(format, formatOptions).toBuffer();
+                    processedBuffer = await sharpInstance.sharpen().toFormat(format, formatOptions).toBuffer();
                 } else {
                     // Just apply resize/rotation without format change
-                    processedBuffer = await sharpInstance.toBuffer();
+                    processedBuffer = await sharpInstance.sharpen().toBuffer();
+                                                        
                 }
             } catch (sharpError) {
                 console.error('Sharp processing error:', sharpError);
