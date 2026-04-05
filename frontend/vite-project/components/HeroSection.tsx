@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import React from "react";
 const blur = {
   hidden: { opacity: 0, filter: "blur(10px)", y: 24 },
@@ -47,12 +48,12 @@ const HeroSection = () => {
         variants={blur}
         className="mt-10 flex flex-wrap items-center justify-center gap-4"
       >
-        <a
-          href="#get-started"
+        <Link
+          to="/editor/image"
           className="inline-flex items-center rounded-full px-10 py-4 text-base font-semibold text-primary-foreground bg-gradient-to-b from-gold-soft to-gold transition-transform duration-200 hover:scale-105 hover:brightness-110 glow-gold"
         >
           Get Started
-        </a>
+        </Link>
         <a
           href="#how-it-works"
           className="inline-flex items-center px-4 py-4 text-base font-medium transition-colors duration-200 hover:text-foreground"

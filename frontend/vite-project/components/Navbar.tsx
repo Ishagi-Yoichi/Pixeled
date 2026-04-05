@@ -10,7 +10,7 @@ const Navbar = () => {
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       className="fixed top-0 left-0 right-0 z-50 h-20 backdrop-blur-xl border-b"
       style={{
-        backgroundColor: "rgba(0,0,0,0.25)",
+        backgroundColor: "rgba(0,0,0,0.15)",
         borderColor: "rgba(255,255,255,0.06)",
       }}
     >
