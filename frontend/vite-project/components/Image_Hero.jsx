@@ -112,7 +112,7 @@ export default function Image_Hero(){
         <>
          <div className='min-h-screen bg-black  flex items-center '>
          <div className=' mx-auto space-y-6  '>
-            <h1 className='text-white text-9xl -mt-28 -ml-44 text-center bitcount-prop-single-uniqifier'>Image Arena</h1>
+            <h1 className='text-white text-9xl mt-8 -ml-44 text-center bitcount-prop-single-uniqifier'>Image Arena</h1>
              <div className='bg-gray-100 flex flex-col w-5xl justify-between -ml-22  p-4 rounded-2xl min-h-[600px]'>
             <div className='h-[250px] flex items-center gap-18 w-full '>
                 <input

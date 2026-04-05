@@ -38,7 +38,6 @@ async function startWorker() {
         const thumbBuffer = await sharp(original.Body)
           .resize(200, 200)
           .toBuffer();
-
         const thumbKey = data.key.replace(/(\.[\w\d_-]+)$/i, "-thumb$1");
 
         //  Upload thumbnail back to Filebase
