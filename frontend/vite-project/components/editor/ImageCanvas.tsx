@@ -111,12 +111,12 @@ const ImageCanvas = ({ image, canvasRef }: ImageCanvasProps) => {
       </div>
 
       {/* Zoom controls */}
-      <div className="h-10 flex items-center justify-center gap-2 border-t border-border/50 shrink-0">
+      <div className="h-18 flex items-center justify-center gap-2 border-t border-border/50 shrink-0">
         <button
           onClick={() => setZoom((z) => Math.max(0.1, z - 0.1))}
           className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ZoomOut size={14} />
+          <ZoomOut size={20} />
         </button>
         <span className="text-xs text-muted-foreground w-14 text-center font-mono">
           {Math.round(zoom * 100)}%
@@ -125,14 +125,14 @@ const ImageCanvas = ({ image, canvasRef }: ImageCanvasProps) => {
           onClick={() => setZoom((z) => Math.min(5, z + 0.1))}
           className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ZoomIn size={14} />
+          <ZoomIn size={20} />
         </button>
         <button
           onClick={() => setZoom(fitZoom)}
           className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors"
           title="Fit to view"
         >
-          <Maximize size={14} />
+          <Maximize size={20} />
         </button>
       </div>
     </div>

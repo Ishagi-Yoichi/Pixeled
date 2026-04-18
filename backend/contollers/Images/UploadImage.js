@@ -7,7 +7,6 @@ import sharp from "sharp";
 
 export async function Upload(req, res) {
   try {
-    // Extract transformation parameters from request body
     const { height, width, format, rotation, quality } = req.body;
 
     const fileContent = fs.readFileSync(req.file.path);

@@ -23,7 +23,8 @@ const HeroSection = () => {
         initial="hidden"
         animate="visible"
         variants={blur}
-        className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-foreground leading-[1.05] tracking-[-0.02em] max-w-[920px] text-shadow-hero"
+        className="font-ebr  text-5xl sm:text-6xl md:text-7xl font-extrabold text-foreground leading-[1.05] tracking-[-0.02em] max-w-[920px] text-shadow-hero"
+        // style={{ fontWeight: 100 }}
       >
         Clarity for Every Beautiful Idea You Have.
       </motion.h1>

@@ -5,25 +5,37 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "tsx server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@clerk/express": "^2.1.5",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
+    "@prisma/adapter-pg": "^7.7.0",
+    "@prisma/client": "^7.7.0",
     "amqplib": "^0.10.9",
     "aws-sdk": "^2.1692.0",
     "bcrypt": "^6.0.0",
     "crypto": "^1.0.1",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.4.1",
     "express": "^5.1.0",
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.1",
     "multer": "^2.0.2",
+    "pg": "^8.20.0",
     "sharp": "^0.34.4"
   },
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@prisma/config": "^7.6.0",
+    "@types/node": "^25.6.0",
+    "@types/pg": "^8.20.0",
+    "prisma": "^7.7.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
 }

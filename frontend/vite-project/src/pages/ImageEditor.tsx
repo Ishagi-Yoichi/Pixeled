@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, RefObject } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import ImageUpload from "../../components/editor/ImageUpload";
@@ -38,7 +38,7 @@ const initialState: ImageState = {
 
 const ImageEditor = () => {
   const [image, setImage] = useState<ImageState>(initialState);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const handleFileLoad = useCallback((file: File) => {
     const url = URL.createObjectURL(file);
@@ -59,6 +59,19 @@ const ImageEditor = () => {
 
   const updateImage = useCallback((updates: Partial<ImageState>) => {
     setImage((prev) => ({ ...prev, ...updates }));
+  }, []);
+
+  const resetToOriginal = useCallback(() => {
+    setImage((prev) => ({
+      ...prev,
+      rotation: initialState.rotation,
+      width: prev.originalWidth,
+      height: prev.originalHeight,
+      sharpness: initialState.sharpness,
+      exportFormat: initialState.exportFormat,
+      exportQuality: initialState.exportQuality,
+      aspectLocked: initialState.aspectLocked,
+    }));
   }, []);
 
   const handleExport = useCallback(() => {
@@ -97,11 +110,19 @@ const ImageEditor = () => {
       ) : (
         <div className="flex-1 flex min-h-0">
           {/* Tools Panel */}
-          <ToolsPanel image={image} updateImage={updateImage} />
+          <ToolsPanel
+            image={image}
+            updateImage={updateImage}
+            onResetToOriginal={resetToOriginal}
+          />
 
           {/* Canvas */}
+
           <div className="flex-1 min-w-0">
-            <ImageCanvas image={image} canvasRef={canvasRef} />
+            <ImageCanvas
+              image={image}
+              canvasRef={canvasRef as RefObject<HTMLCanvasElement>}
+            />
           </div>
 
           {/* Properties Panel */}

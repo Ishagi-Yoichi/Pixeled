@@ -5,6 +5,8 @@ import { Toaster } from "../components/ui/toaster";
 import { TooltipProvider } from "../components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import ImageEditor from "./pages/ImageEditor.tsx";
+import Signup from "./pages/Signup.tsx";
+import Signin from "./pages/Signin.tsx";
 // import VideoEditor from "./pages/VideoEditor.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -19,6 +21,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/editor/image" element={<ImageEditor />} />
+          <Route path="/auth/signup" element={<Signup />} />
+          <Route path="/auth/signin" element={<Signin />} />
           {/* <Route path="/editor/video" element={<VideoEditor />} /> */}
           <Route path="*" element={<NotFound />} />
         </Routes>

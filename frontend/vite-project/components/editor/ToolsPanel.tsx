@@ -6,14 +6,32 @@ import {
   FileDown,
 } from "lucide-react";
 import type { ImageState } from "../../src/pages/ImageEditor";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import React from "react";
 
 interface ToolsPanelProps {
   image: ImageState;
   updateImage: (updates: Partial<ImageState>) => void;
+  onResetToOriginal: () => void;
 }
 
-const ToolsPanel = ({ image, updateImage }: ToolsPanelProps) => {
+/** Radix Select uses real DOM items — native <select> cannot style options this way. */
+const formatSelectContentClass =
+  "border-border bg-[rgba(0,0,0,0.35)] text-foreground";
+const formatSelectItemClass =
+  "text-xs text-neutral-300  data-[highlighted]:bg-[rgba(0,0,0,0.5)] data-[highlighted]:text-white data-[state=checked]:text-white data-[state=checked]:bg-transparent focus:bg-[rgba(0,0,0,0.5)] focus:text-white";
+
+const ToolsPanel = ({
+  image,
+  updateImage,
+  onResetToOriginal,
+}: ToolsPanelProps) => {
   return (
     <aside
       className="w-56 shrink-0 border-r overflow-y-auto"
@@ -49,7 +67,7 @@ const ToolsPanel = ({ image, updateImage }: ToolsPanelProps) => {
           <input
             type="range"
             min={0}
-            max={100}
+            max={200}
             value={image.sharpness}
             onChange={(e) => updateImage({ sharpness: Number(e.target.value) })}
             className="flex-1 accent-primary h-1"
@@ -104,12 +122,8 @@ const ToolsPanel = ({ image, updateImage }: ToolsPanelProps) => {
             />
           </div>
           <button
-            onClick={() =>
-              updateImage({
-                width: image.originalWidth,
-                height: image.originalHeight,
-              })
-            }
+            type="button"
+            onClick={onResetToOriginal}
             className="text-xs text-primary hover:underline"
           >
             Reset to original
@@ -121,15 +135,28 @@ const ToolsPanel = ({ image, updateImage }: ToolsPanelProps) => {
       <Section title="Format">
         <div className="flex items-center gap-2">
           <FileDown size={14} className="text-primary shrink-0" />
-          <select
+          <Select
             value={image.exportFormat}
-            onChange={(e) => updateImage({ exportFormat: e.target.value })}
-            className="flex-1 bg-muted/40 text-foreground text-xs rounded px-2 py-1.5 border border-border focus:ring-1 focus:ring-primary outline-none"
+            onValueChange={(v) => updateImage({ exportFormat: v })}
           >
-            <option value="png">PNG</option>
-            <option value="jpeg">JPEG</option>
-            <option value="webp">WEBP</option>
-          </select>
+            <SelectTrigger className="flex-1 h-8 min-h-8 bg-muted/40 text-foreground text-xs rounded px-2 py-1.5 border border-border focus:ring-1 focus:ring-ring focus:ring-offset-0 gap-1">
+              <SelectValue placeholder="Format" />
+            </SelectTrigger>
+            <SelectContent
+              position="popper"
+              className={formatSelectContentClass}
+            >
+              <SelectItem value="png" className={formatSelectItemClass}>
+                PNG
+              </SelectItem>
+              <SelectItem value="jpeg" className={formatSelectItemClass}>
+                JPEG
+              </SelectItem>
+              <SelectItem value="webp" className={formatSelectItemClass}>
+                WEBP
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         {(image.exportFormat === "jpeg" || image.exportFormat === "webp") && (
           <div className="mt-2 flex items-center gap-2">

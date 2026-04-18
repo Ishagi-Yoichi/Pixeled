@@ -157,6 +157,12 @@
   }
 }
 
+@font-face {
+  font-family: "EBR";
+  src: url("./assets/fonts/East\ Botany.woff") format("woff");
+  font-display: swap;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -172,6 +178,17 @@
 }
 
 @layer utilities {
+  .font-ebr {
+    font-family:
+      "EBR",
+      "Figtree",
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      sans-serif;
+    font-weight: 100;
+  }
+
   .text-shadow-hero {
     text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
   }

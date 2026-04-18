@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/client"
+}
+
+
+
+// schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  }
+
+enum ImageStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Users{
+  id Int @id @default(autoincrement())
+  clerk_id String @unique
+  email String @unique
+  createdAt DateTime @default(now())
+}
+
+model Image {
+  id              String         @id @default(uuid())
+  key             String         @unique // Original file key in Filebase
+  filename        String
+  contentType     String
+  size            Int
+  status          ImageStatus    @default(PENDING)
+  
+  // Transformation "Intent" (Captured from your ImageState)
+  rotation        Int            @default(0)
+  width           Int?
+  height          Int?
+  sharpness       Int            @default(0)
+  exportFormat    String         @default("png")
+  exportQuality   Int            @default(92)
+
+  // Relationships
+  versions        ImageVersion[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  ownerId         String?        // Link to your User ID
+}
+
+model ImageVersion {
+  id        String   @id @default(uuid())
+  type      String   // "thumbnail", "transformed", "display"
+  key       String   @unique
+  url       String   // The URL returned from Filebase/S3
+  imageId   String
+  image     Image    @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
