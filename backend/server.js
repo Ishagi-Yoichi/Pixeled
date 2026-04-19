@@ -8,12 +8,20 @@ import s3 from "./storage.js";
 import { connectRabbitMQ } from "./utils/rabbitmq.js";
 import mongoose from "mongoose";
 import { clerkMiddleware } from "@clerk/express";
+import cors from "cors";
 
 // Load environment variables
 dotenv.config();
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
+app.use(express.json());
 app.use(clerkMiddleware());
 
 // Enable CORS for frontend
@@ -31,7 +39,6 @@ app.use((req, res, next) => {
   }
 });
 
-app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // For parsing form data
 
 app.get("/", (req, res) => {

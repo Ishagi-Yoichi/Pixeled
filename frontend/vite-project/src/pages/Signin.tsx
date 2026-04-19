@@ -1,14 +1,16 @@
 "use client";
 
-import { useSignIn } from "@clerk/clerk-react";
+import { useAuth, useSignIn } from "@clerk/clerk-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import React from "react";
 import heroSky from "../../src/assets/GoldenSky.png";
 
 export default function SignIn() {
   const { isLoaded, signIn, setActive } = useSignIn();
-
+  const { getToken } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -27,7 +29,14 @@ export default function SignIn() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        // router.push("/dashboard")
+        const token = await getToken();
+        const response = await fetch("http://localhost:3000/signin", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const dbUser = await response.json();
+        console.log("User from postgres:", dbUser);
+        navigate("/dashboard");
       }
     } catch (err) {
       setError(err.errors?.[0]?.message || "Something went wrong");
