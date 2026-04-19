@@ -7,8 +7,9 @@ import Index from "./pages/Index.tsx";
 import ImageEditor from "./pages/ImageEditor.tsx";
 import Signup from "./pages/Signup.tsx";
 import Signin from "./pages/Signin.tsx";
-// import VideoEditor from "./pages/VideoEditor.tsx";
+import { VideoEditor } from "./pages/VideoEditor.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import ProtectedRoute from "../components/ProtectedRoute.tsx";
 
 const queryClient = new QueryClient();
 
@@ -20,10 +21,17 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/editor/image" element={<ImageEditor />} />
           <Route path="/auth/signup" element={<Signup />} />
           <Route path="/auth/signin" element={<Signin />} />
-          {/* <Route path="/editor/video" element={<VideoEditor />} /> */}
+          <Route
+            path="/editor/image"
+            element={
+              <ProtectedRoute>
+                <ImageEditor />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/editor/video" element={<VideoEditor />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

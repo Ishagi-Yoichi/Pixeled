@@ -5,6 +5,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import React from "react";
+import { Link } from "react-router-dom";
 import heroSky from "../../src/assets/GoldenSky.png";
 
 export default function SignIn() {
@@ -121,9 +122,12 @@ export default function SignIn() {
         {/*Footer */}
         <div className="mt-6 text-center text-sm text-zinc-400">
           Don’t have an account?{" "}
-          <span className="text-amber-300 hover:underline cursor-pointer">
+          <Link
+            to="/auth/signup"
+            className="text-amber-300 hover:underline cursor-pointer"
+          >
             Sign up
-          </span>
+          </Link>
         </div>
       </motion.div>
     </div>
