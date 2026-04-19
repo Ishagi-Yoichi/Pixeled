@@ -1,16 +1,14 @@
+"use client";
+
 import React, { useState } from "react";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile, toBlobURL } from "@ffmpeg/util";
-import VideoUploader from "./VideoUploader";
-import { Film, Upload } from "lucide-react";
-import FeatureSelector from "./FeatureSelector";
-import FormatConvertor from "./features/FormatConvertor";
+import { motion } from "framer-motion";
+import heroSky from "../src/assets/GoldenSky.png";
 
 function VideoArena() {
-  // Initialize FFmpeg instance
   const [ffmpeg] = useState(() => new FFmpeg({ log: true }));
 
-  // Component state
   const [inputFile, setInputFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [outputUrl, setOutputUrl] = useState("");
@@ -20,24 +18,24 @@ function VideoArena() {
   const [intervalSeconds, setIntervalSeconds] = useState(3);
   const [selectedFeature, setSelectedFeature] = useState(null);
 
-  // Handle file selection
-  const handleFileChange = (fileOrEvent) => {
-    // handle both event object and direct file object
-    const file = fileOrEvent?.target?.files?.[0] || fileOrEvent || null;
+  // Upload handler
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
 
-    // Clean up previous preview URL if it exists
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
+      setStatus("Only video files are allowed.");
+      return;
     }
 
-    // Create preview URL for the uploaded file
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-    } else {
-      setPreviewUrl("");
+    if (file.size > 50 * 1024 * 1024) {
+      setStatus("Please upload video smaller than 50MB.");
+      return;
     }
 
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
     setInputFile(file);
     setOutputUrl("");
     setThumbnails([]);
@@ -45,427 +43,255 @@ function VideoArena() {
   };
 
   const handleReset = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    if (outputUrl) {
-      URL.revokeObjectURL(outputUrl);
-    }
     setInputFile(null);
     setPreviewUrl("");
     setOutputUrl("");
+    setThumbnails([]);
     setSelectedFeature(null);
   };
 
-  const renderFeatureComponent = () => {
-    if (!inputFile || !previewUrl) return null;
+  // Load FFmpeg
+  const loadFFmpeg = async () => {
+    if (!ffmpeg.loaded) {
+      const baseURL =
+        "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm";
 
-    switch (selectedFeature) {
-      case "convert":
-        return <FormatConvertor video={inputFile} ffmpeg={ffmpeg} />;
-      case "thumbnails":
-        return (
-          <ThumbnailExtractor video={inputFile} outputUrl={videoPreviewUrl} />
-        );
-      case "audio":
-        return <AudioExtractor video={inputFile} outputUrl={videoPreviewUrl} />;
-      case "trim":
-        return <VideoTrimmer video={inputFile} outputUrl={videoPreviewUrl} />;
-      case "compress":
-        return (
-          <VideoCompressor video={inputFile} outputUrl={videoPreviewUrl} />
-        );
-      default:
-        return null;
+      const coreURL = await toBlobURL(
+        `${baseURL}/ffmpeg-core.js`,
+        "text/javascript",
+      );
+      const wasmURL = await toBlobURL(
+        `${baseURL}/ffmpeg-core.wasm`,
+        "application/wasm",
+      );
+
+      await ffmpeg.load({ coreURL, wasmURL });
     }
   };
 
-  // Main conversion function
-  const convertVideo = async () => {
-    if (!inputFile) return;
-
-    // Check file size limit (50MB max for WASM memory)
-    if (inputFile.size > 50 * 1024 * 1024) {
-      setStatus("Error: File too large. Please use a file smaller than 50MB.");
-      return;
-    }
-
+  // 🎬 Thumbnail extraction
+  const extractThumbnails = async () => {
     setLoading(true);
-    setStatus("Initializing FFmpeg...");
+    setStatus("Extracting thumbnails...");
 
     try {
-      // Load FFmpeg core files from CDN if not already loaded
-      if (!ffmpeg.loaded) {
-        setStatus("Loading FFmpeg core...");
-        const baseURL =
-          "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm";
+      await loadFFmpeg();
 
-        // Convert CDN URLs to blob URLs for cross-origin isolation
-        const coreURL = await toBlobURL(
-          `${baseURL}/ffmpeg-core.js`,
-          "text/javascript",
-        );
-        const wasmURL = await toBlobURL(
-          `${baseURL}/ffmpeg-core.wasm`,
-          "application/wasm",
-        );
+      await ffmpeg.writeFile("input.mp4", await fetchFile(inputFile));
 
-        await ffmpeg.load({ coreURL, wasmURL });
-      }
-
-      // Write input file to FFmpeg virtual file system
-      setStatus("Writing input file...");
-      const inputData = await fetchFile(inputFile);
-      await ffmpeg.writeFile("input.mp4", inputData);
-
-      // Execute FFmpeg conversion command
-      setStatus("Converting video...");
       await ffmpeg.exec([
         "-i",
-        "input.mp4", // Input file
-        "-c:v",
-        "libvpx", // Video codec
-        "-b:v",
-        "1M", // Video bitrate
-        "-c:a",
-        "libvorbis", // Audio codec
-        "output.webm", // Output file
+        "input.mp4",
+        "-vf",
+        `fps=1/${intervalSeconds}`,
+        "thumb_%03d.jpg",
       ]);
 
-      // Read converted file from virtual file system
-      const data = await ffmpeg.readFile("output.webm");
+      const files = await ffmpeg.listDir("/");
+      const thumbs = files.filter((f) => f.name.includes("thumb"));
 
-      // Create downloadable blob URL
-      const url = URL.createObjectURL(
-        new Blob([data.buffer], { type: "video/webm" }),
-      );
-      setOutputUrl(url);
+      const urls = [];
 
-      // Clean up temporary files from virtual file system
-      try {
-        await ffmpeg.deleteFile("input.mp4");
-      } catch (e) {
-        console.log("Cleanup error (ignorable):", e.message);
-      }
-      try {
-        await ffmpeg.deleteFile("output.webm");
-      } catch (e) {
-        console.log("Cleanup error (ignorable):", e.message);
+      for (let file of thumbs) {
+        const data = await ffmpeg.readFile(file.name);
+        const url = URL.createObjectURL(
+          new Blob([data.buffer], { type: "image/jpeg" }),
+        );
+        urls.push(url);
       }
 
-      setStatus("Conversion complete!");
+      setThumbnails(urls);
+      setStatus("Thumbnails extracted!");
     } catch (err) {
-      console.error("FFmpeg error:", err);
-      setStatus("Error: " + (err?.message || String(err)));
-
-      // Clean up on error as well
-      try {
-        await ffmpeg.deleteFile("input.mp4");
-      } catch (e) {
-        console.log("Cleanup error (ignorable):", e.message);
-      }
-      try {
-        await ffmpeg.deleteFile("output.webm");
-      } catch (e) {
-        console.log("Cleanup error (ignorable):", e.message);
-      }
+      setStatus("Error processing video.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Extract thumbnails at specific intervals
-  const extractThumbnails = async () => {
-    if (!inputFile) return;
-
-    if (inputFile.size > 50 * 1024 * 1024) {
-      setStatus("Error: File too large. Please use a file smaller than 50MB.");
-      return;
-    }
-
+  // ✂️ Trim
+  const trimVideo = async () => {
     setLoading(true);
-    setThumbnails([]);
-    setStatus("Initializing FFmpeg...");
+    setStatus("Trimming video...");
 
     try {
-      if (!ffmpeg.loaded) {
-        setStatus("Loading FFmpeg core...");
-        const baseURL =
-          "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm";
+      await loadFFmpeg();
 
-        const coreURL = await toBlobURL(
-          `${baseURL}/ffmpeg-core.js`,
-          "text/javascript",
-        );
-        const wasmURL = await toBlobURL(
-          `${baseURL}/ffmpeg-core.wasm`,
-          "application/wasm",
-        );
+      await ffmpeg.writeFile("input.mp4", await fetchFile(inputFile));
 
-        await ffmpeg.load({ coreURL, wasmURL });
-      }
+      await ffmpeg.exec([
+        "-i",
+        "input.mp4",
+        "-ss",
+        "00:00:02",
+        "-to",
+        "00:00:06",
+        "-c",
+        "copy",
+        "output.mp4",
+      ]);
 
-      setStatus("Writing input file...");
-      const inputData = await fetchFile(inputFile);
-      console.log("Input file size:", inputData.length, "bytes");
-      await ffmpeg.writeFile("input.mp4", inputData);
+      const data = await ffmpeg.readFile("output.mp4");
 
-      setStatus("Extracting thumbnails every " + intervalSeconds + " seconds");
-      console.log(`Extracting thumbnails every ${intervalSeconds} seconds`);
-
-      const thumbnailUrls = [];
-
-      // Use the original fps filter approach but with more conservative settings
-      try {
-        // Extract with fps filter - this is more reliable
-        await ffmpeg.exec([
-          "-threads",
-          "1",
-          "-vsync",
-          "2", // reduces RAM spikes
-          "-i",
-          "input.mp4",
-          "-vf",
-          `fps=1/${intervalSeconds},scale=960:-1`, // Scale down + extract at interval
-          "-q:v",
-          "12",
-          "-preset",
-          "ultrafast", // Lower quality = less memory
-          "-frames:v",
-          "20", // Maximum 20 frames to prevent overflow
-          "thumb_%03d.jpg",
-        ]);
-      } catch (execError) {
-        console.log("FFmpeg exec error:", execError.message);
-        // If it fails, try to continue and see what files we got
-      }
-
-      // Read whatever thumbnails were created
-      setStatus("Reading thumbnails...");
-      const files = await ffmpeg.listDir("/");
-      console.log(
-        "All files:",
-        files.map((f) => f.name),
+      const url = URL.createObjectURL(
+        new Blob([data.buffer], { type: "video/mp4" }),
       );
 
-      const thumbFiles = files
-        .filter(
-          (file) =>
-            file.name.startsWith("thumb_") && file.name.endsWith(".jpg"),
-        )
-        .sort();
-
-      console.log(`Found ${thumbFiles.length} thumbnails`);
-
-      for (let i = 0; i < thumbFiles.length; i++) {
-        const file = thumbFiles[i];
-        try {
-          const data = await ffmpeg.readFile(file.name);
-          const url = URL.createObjectURL(
-            new Blob([data.buffer], { type: "image/jpeg" }),
-          );
-          const timestamp = i * intervalSeconds;
-          thumbnailUrls.push({ name: file.name, url, timestamp });
-          console.log(`Read thumbnail ${i + 1} at ${timestamp}s`);
-
-          // Delete immediately after reading
-          await ffmpeg.deleteFile(file.name);
-        } catch (err) {
-          console.log(`Could not read ${file.name}:`, err.message);
-        }
-      }
-
-      // Clean up
-      setStatus("Cleaning up...");
-      try {
-        await ffmpeg.deleteFile("input.mp4");
-      } catch (e) {
-        console.log("Cleanup error (ignorable):", e.message);
-      }
-
-      if (thumbnailUrls.length === 0) {
-        setStatus("Error: Could not extract any thumbnails");
-      } else {
-        console.log(
-          `Extraction completed - ${thumbnailUrls.length} thumbnails`,
-        );
-        setThumbnails(thumbnailUrls);
-        setStatus(`Extracted ${thumbnailUrls.length} thumbnails!`);
-      }
+      setOutputUrl(url);
+      setStatus("Trim complete!");
     } catch (err) {
-      console.error("FFmpeg error:", err);
-      setStatus("Error: " + (err?.message || String(err)));
+      setStatus("Error trimming video.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 📐 Aspect ratio
+  const changeAspectRatio = async () => {
+    setLoading(true);
+    setStatus("Changing aspect ratio...");
+
+    try {
+      await loadFFmpeg();
+
+      await ffmpeg.writeFile("input.mp4", await fetchFile(inputFile));
+
+      await ffmpeg.exec([
+        "-i",
+        "input.mp4",
+        "-vf",
+        "scale=720:720",
+        "output.mp4",
+      ]);
+
+      const data = await ffmpeg.readFile("output.mp4");
+
+      const url = URL.createObjectURL(
+        new Blob([data.buffer], { type: "video/mp4" }),
+      );
+
+      setOutputUrl(url);
+      setStatus("Aspect ratio updated!");
+    } catch (err) {
+      setStatus("Error processing video.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-black min-h-screen text-white">
-      <div className="container mx-auto px-4 pb-12 pt-8 max-w-7xl">
-        <h1 className="text-9xl text-center pt-6 bitcount-prop-single-uniqifier text-white">
-          Video Arena
-        </h1>
-        <p className="text-center mt-4 text-2xl text-gray-200">
-          Professional video modification tools at your fingertips
-        </p>
-        {!inputFile ? (
-          <div className="font-sans flex justify-center mt-16 px-4">
-            <VideoUploader onVideoUpload={handleFileChange} />
+    <div className="relative min-h-screen text-white">
+      {/* 🌇 Background */}
+      <div className="absolute inset-0 -z-10">
+        <img src={heroSky} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-black/60" />
+      </div>
+
+      <div className="max-w-6xl mx-auto px-6 pt-28 pb-16">
+        {/* Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          className="text-center mb-12"
+        >
+          <h1 className="text-6xl font-extrabold">Video Editor</h1>
+          <p className="text-zinc-400 mt-3">
+            Edit videos directly in your browser
+          </p>
+        </motion.div>
+
+        {/* Upload */}
+        {!inputFile && (
+          <div className="flex justify-center">
+            <label className="cursor-pointer border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl px-10 py-12 text-center hover:bg-white/10 transition">
+              <input type="file" hidden onChange={handleFileChange} />
+              <p className="text-lg text-zinc-300">Click to upload video</p>
+              <p className="text-sm text-zinc-500 mt-2">Max size: 50MB</p>
+            </label>
           </div>
-        ) : (
+        )}
+
+        {/* Workspace */}
+        {inputFile && (
           <div className="space-y-6">
-            <div className="bg-gray-800/60 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 mt-3.5">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <Upload className="h-5 w-5 text-cyan-400" />
-                  <div>
-                    <h3 className="font-semibold text-xl">{inputFile.name}</h3>
-                    <p className="text-sm text-gray-400">
-                      {(inputFile.size / (1024 * 1024)).toFixed(2)} MB
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={handleReset}
-                  className=" p-6 text-xl bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors font-medium"
-                >
-                  Upload New Video
-                </button>
-              </div>
+            {/* Video */}
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
               <video
                 src={outputUrl || previewUrl}
                 controls
-                className="w-full max-h-[400px] rounded-lg bg-black text-2xl"
+                className="w-full rounded-xl"
               />
             </div>
-            {!selectedFeature ? (
-              <FeatureSelector onSelectFeature={setSelectedFeature} />
-            ) : (
-              <div className="space-y-4">
-                <button
-                  onClick={() => setSelectedFeature(null)}
-                  className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm font-medium"
-                >
-                  ← Back to features
-                </button>
-                {renderFeatureComponent()}
+
+            {/* Feature Buttons */}
+            <div className="flex flex-wrap gap-3 justify-center">
+              <button onClick={extractThumbnails} className="btn-gold">
+                Extract Thumbnails
+              </button>
+
+              <button onClick={trimVideo} className="btn-gold">
+                Trim Video
+              </button>
+
+              <button onClick={changeAspectRatio} className="btn-gold">
+                Change Ratio
+              </button>
+
+              <button onClick={handleReset} className="btn-secondary">
+                Upload New
+              </button>
+            </div>
+
+            {/* Status */}
+            {status && (
+              <p className="text-center text-sm text-zinc-400">{status}</p>
+            )}
+
+            {/* Loader */}
+            {loading && (
+              <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full bg-amber-400 animate-pulse w-1/2" />
+              </div>
+            )}
+
+            {/* Thumbnails */}
+            {thumbnails.length > 0 && (
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                {thumbnails.map((src, i) => (
+                  <img key={i} src={src} className="rounded-lg" />
+                ))}
               </div>
             )}
           </div>
         )}
       </div>
+
+      {/* Styles */}
+      <style jsx>{`
+        .btn-gold {
+          padding: 10px 18px;
+          border-radius: 999px;
+          font-weight: 600;
+          background: linear-gradient(to right, #fcd34d, #f59e0b);
+          color: black;
+          box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+          transition: all 0.2s;
+        }
+
+        .btn-gold:hover {
+          transform: scale(1.05);
+          filter: brightness(1.1);
+        }
+
+        .btn-secondary {
+          padding: 10px 18px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #aaa;
+        }
+      `}</style>
     </div>
   );
-
-  // return (
-  //   <div className="bg-black min-h-screen text-white">
-  //   <div style={{ padding: 20, fontFamily: "sans-serif" }}>
-  //     <h1 className="text-9xl text-center mt-3.5 bitcount-prop-single-uniqifier">Video Arena</h1>
-
-  //     <div className="flex ">
-  //     {/* File input */}
-  //     <input className="border p-8 rounded-xl text-xl ml-20 mt-4 hover:text-gray-400 font-sans hover:cursor-pointer lora-uniquifier"
-  //       type="file"
-  //       accept="video/mp4,video/*"
-  //       onChange={handleFileChange}
-  //     />
-  //     <h1 className="p-4 ml-6 text-6xl lora-uniquifier bg-gradient-to-r from-gray-50 to-gray-600 text-transparent bg-clip-text">Select Your Modifications</h1>
-  //     </div>
-  //     <div style={{ marginTop: 15 }}>
-  //       {/* Convert button */}
-  //       <button
-  //         onClick={convertVideo}
-  //         disabled={!inputFile || loading}
-  //         className="p-3 lora-uniquifier bg-gray-100 rounded-2xl text-zinc-900 cursor-pointer font-semibold "
-  //       >
-  //         {loading ? "Processing..." : "Convert to WebM"}
-  //       </button>
-  //       <br/>
-
-  //       {/* Extract thumbnails button */}
-  //       <button
-  //         onClick={extractThumbnails}
-  //         disabled={!inputFile || loading}
-  //         className="p-3 lora-uniquifier mt-2.5 bg-gray-100 rounded-2xl text-zinc-900 cursor-pointer font-semibold"
-  //       >
-  //         {loading ? "Processing..." : "Extract Thumbnails"}
-  //       </button><br/>
-
-  //       {/* Interval input */}
-  //       <label className="ml-15 lora-uniquifier text-xl">
-  //         Interval (seconds):
-  //         <input
-  //           type="number"
-  //           min="1"
-  //           value={intervalSeconds}
-  //           onChange={(e) => setIntervalSeconds(Number(e.target.value))}
-  //           className="p-2.5 lora-uniquifier ml-1.5 bg-gray-100 rounded-2xl text-zinc-900 text-center cursor-pointer font-semibold"
-  //         />
-  //       </label>
-  //     </div>
-
-  //     {/* Status message */}
-  //     {status && <p style={{ marginTop: 20,fontSize: 22 }}>{status}</p>}
-
-  //     {/* Thumbnails display */}
-  //     {thumbnails.length > 0 && (
-  //       <div style={{ marginTop: 20 }}>
-  //         <h2>Extracted Thumbnails</h2>
-  //         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-  //           {thumbnails.map((thumb, index) => (
-  //             <div key={index} style={{ textAlign: 'center' }}>
-  //               <img
-  //                 src={thumb.url}
-  //                 alt={`Thumbnail ${index + 1}`}
-  //                 style={{ width: 200, height: 'auto', border: '1px solid #ddd' }}
-  //               />
-  //               <div style={{ fontSize: 12, marginTop: 5 }}>
-  //                 {thumb.timestamp ? `${thumb.timestamp.toFixed(1)}s` : `${index * intervalSeconds}s`}
-  //               </div>
-  //               <a
-  //                 href={thumb.url}
-  //                 download={`thumbnail_${index + 1}.jpg`}
-  //                 style={{ fontSize: 12, color: '#007bff' }}
-  //               >
-  //                 Download
-  //               </a>
-  //             </div>
-  //           ))}
-  //         </div>
-  //       </div>
-  //     )}
-
-  //     {/* Output video preview and download */}
-  //     {outputUrl && (
-  //       <div style={{ marginTop: 20 }}>
-  //         <h3>Converted Video</h3>
-  //         <video
-  //           src={outputUrl}
-  //           controls
-  //           width="400"
-  //           style={{ display: 'block' }}
-  //         />
-  //         <a
-  //           href={outputUrl}
-  //           download="converted.webm"
-  //           style={{
-  //             display: 'inline-block',
-  //             marginTop: 10,
-  //             padding: '8px 12px',
-  //             background: '#007bff',
-  //             color: 'white',
-  //             textDecoration: 'none',
-  //             borderRadius: 4
-  //           }}
-  //         >
-  //           Download WebM
-  //         </a>
-  //       </div>
-  //     )}
-  //   </div>
-  //   </div>
-  // );
 }
 
 export default VideoArena;
