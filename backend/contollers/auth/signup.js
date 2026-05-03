@@ -1,4 +1,3 @@
-import { PrismaClient } from "../../generated/client/client.js";
 import prisma from "../../lib/prisma.js";
 import { getAuth } from "@clerk/express";
 
