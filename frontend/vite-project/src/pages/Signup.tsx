@@ -17,7 +17,7 @@ export default function SignUp() {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSignUp = async (e) => {
+  const handleSignUp = async (e: any) => {
     e.preventDefault();
     if (!isLoaded) return;
 
@@ -34,12 +34,12 @@ export default function SignUp() {
       });
 
       setPendingVerification(true);
-    } catch (err) {
+    } catch (err: any) {
       setError(err.errors?.[0]?.message || "Something went wrong");
     }
   };
 
-  const handleVerify = async (e) => {
+  const handleVerify = async (e: any) => {
     e.preventDefault();
     if (!isLoaded) return;
 
@@ -54,7 +54,7 @@ export default function SignUp() {
         await setActive({ session: result.createdSessionId });
         const token = await getToken();
 
-        const res = await fetch("http://localhost:3000/signup", {
+        const res = await fetch("https://pixeled.onrender.com/signup", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -134,9 +134,9 @@ export default function SignUp() {
 
               <button
                 type="submit"
-                className="w-full rounded-full px-6 py-3 font-semibold text-black 
-                bg-gradient-to-r from-amber-300 to-amber-500 
-                shadow-[0_10px_30px_rgba(245,158,11,0.4)] 
+                className="w-full rounded-full px-6 py-3 font-semibold text-black
+                bg-gradient-to-r from-amber-300 to-amber-500
+                shadow-[0_10px_30px_rgba(245,158,11,0.4)]
                 hover:scale-[1.03] transition"
               >
                 Continue
@@ -169,9 +169,9 @@ export default function SignUp() {
 
               <button
                 type="submit"
-                className="w-full rounded-full px-6 py-3 font-semibold text-black 
-                bg-gradient-to-r from-amber-300 to-amber-500 
-                shadow-[0_10px_30px_rgba(245,158,11,0.4)] 
+                className="w-full rounded-full px-6 py-3 font-semibold text-black
+                bg-gradient-to-r from-amber-300 to-amber-500
+                shadow-[0_10px_30px_rgba(245,158,11,0.4)]
                 hover:scale-[1.03] transition"
               >
                 Verify & Continue

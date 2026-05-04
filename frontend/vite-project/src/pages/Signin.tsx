@@ -16,7 +16,7 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     if (!isLoaded) return;
 
@@ -31,7 +31,7 @@ export default function SignIn() {
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
         const token = await getToken();
-        const response = await fetch("http://localhost:3000/signin", {
+        const response = await fetch("https://pixeled.onrender.com/signin", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -39,7 +39,7 @@ export default function SignIn() {
         console.log("User from postgres:", dbUser);
         navigate("/dashboard");
       }
-    } catch (err) {
+    } catch (err: any) {
       setError(err.errors?.[0]?.message || "Something went wrong");
     }
   };
@@ -109,10 +109,10 @@ export default function SignIn() {
           {/*Button */}
           <button
             type="submit"
-            className="w-full mt-2 rounded-full px-6 py-3 font-semibold text-black 
-            bg-gradient-to-r from-amber-300 to-amber-500 
-            shadow-[0_10px_30px_rgba(245,158,11,0.4)] 
-            hover:scale-[1.03] hover:brightness-110 
+            className="w-full mt-2 rounded-full px-6 py-3 font-semibold text-black
+            bg-gradient-to-r from-amber-300 to-amber-500
+            shadow-[0_10px_30px_rgba(245,158,11,0.4)]
+            hover:scale-[1.03] hover:brightness-110
             transition-all duration-200"
           >
             Sign In

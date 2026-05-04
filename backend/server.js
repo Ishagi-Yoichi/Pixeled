@@ -17,7 +17,8 @@ const upload = multer({ dest: "uploads/" });
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin:
+      "http://localhost:5173, https://pixeled.nikunjkr1752003.workers.dev/",
     credentials: true,
   }),
 );
@@ -45,10 +46,10 @@ app.get("/", (req, res) => {
   res.status(200).json({ message: "Hey" });
 });
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log(" MongoDB connected"))
-  .catch((err) => console.error(" MongoDB connection error:", err));
+// mongoose
+//   .connect(process.env.MONGODB_URI)
+//   .then(() => console.log(" MongoDB connected"))
+//   .catch((err) => console.error(" MongoDB connection error:", err));
 
 app.post("/signup", Signup);
 app.post("/signin", SignIn);
