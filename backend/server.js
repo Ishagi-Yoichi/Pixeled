@@ -17,8 +17,10 @@ const upload = multer({ dest: "uploads/" });
 
 app.use(
   cors({
-    origin:
-      "http://localhost:5173, https://pixeled.nikunjkr1752003.workers.dev/",
+    origin: [
+      "http://localhost:5173",
+      "https://pixeled.nikunjkr1752003.workers.dev",
+    ],
     credentials: true,
   }),
 );
