@@ -25,7 +25,14 @@ app.use(
   }),
 );
 app.use(express.json());
-app.use(clerkMiddleware());
+// server.js
+app.use(
+  clerkMiddleware({
+    // Tells Clerk to extract the JWT from the Authorization header
+    // in addition to (or instead of) cookies
+    authorizedParties: ["https://pixeled.nikunjkr1752003.workers.dev"],
+  }),
+);
 
 app.use(express.urlencoded({ extended: true })); // For parsing form data
 

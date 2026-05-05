@@ -3,7 +3,7 @@ import { getAuth } from "@clerk/express";
 
 export async function SignIn(req, res) {
   const { userId } = getAuth(req);
-
+  console.log("Auth object:", auth);
   if (!userId) {
     return res.status(401).json({ error: "Authentication required" });
   }

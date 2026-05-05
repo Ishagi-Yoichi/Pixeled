@@ -30,7 +30,18 @@ export default function SignIn() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        const token = await getToken();
+        let token: string | null = null;
+        for (let i = 0; i < 5; i++) {
+          token = await getToken();
+          if (token) break;
+          await new Promise((res) => setTimeout(res, 300)); // wait 300ms
+        }
+
+        if (!token) {
+          setError("Session not ready. Please try again.");
+          return;
+        }
+
         const response = await fetch("https://pixeled.onrender.com/signin", {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
