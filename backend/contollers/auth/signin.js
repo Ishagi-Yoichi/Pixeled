@@ -2,8 +2,9 @@ import prisma from "../../lib/prisma.js";
 import { getAuth } from "@clerk/express";
 
 export async function SignIn(req, res) {
-  const { userId } = getAuth(req);
+  const auth = getAuth(req);
   console.log("Auth object:", auth);
+  const { userId } = auth;
   if (!userId) {
     return res.status(401).json({ error: "Authentication required" });
   }
