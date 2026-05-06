@@ -15,11 +15,12 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if (!isLoaded) return;
-
+    if (!isLoaded || !signIn || !setActive) return;
     setError("");
 
     try {
@@ -29,30 +30,63 @@ export default function SignIn() {
       });
 
       if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        let token: string | null = null;
-        for (let i = 0; i < 5; i++) {
-          token = await getToken();
-          if (token) break;
-          await new Promise((res) => setTimeout(res, 300)); // wait 300ms
-        }
-
-        if (!token) {
-          setError("Session not ready. Please try again.");
-          return;
-        }
-
-        const response = await fetch("https://pixeled.onrender.com/signin", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const dbUser = await response.json();
-        console.log("User from postgres:", dbUser);
-        navigate("/dashboard");
+        await completeSignIn(result);
+      } else if (result.status === "needs_second_factor") {
+        // Trigger email OTP to be sent
+        await signIn.prepareSecondFactor({ strategy: "email_code" });
+        // Show your OTP input UI
+        setShowOtpInput(true);
+      } else {
+        setError(`Unexpected status: ${result.status}`);
       }
     } catch (err: any) {
       setError(err.errors?.[0]?.message || "Something went wrong");
     }
+  };
+
+  // Handle OTP submission
+  const handleOtpSubmit = async (code: string) => {
+    try {
+      if (!signIn || !setActive) return;
+      const result = await signIn.attemptSecondFactor({
+        strategy: "email_code",
+        code,
+      });
+
+      if (result.status === "complete") {
+        await completeSignIn(result);
+      } else {
+        setError("Verification failed. Try again.");
+      }
+    } catch (err: any) {
+      setError(err.errors?.[0]?.message || "Invalid code");
+    }
+  };
+
+  const completeSignIn = async (result: any) => {
+    if (!setActive) return;
+    await setActive({ session: result.createdSessionId });
+
+    let token: string | null = null;
+    for (let i = 0; i < 5; i++) {
+      token = await getToken();
+      if (token) break;
+      await new Promise((res) => setTimeout(res, 300));
+    }
+
+    if (!token) {
+      setError("Session not ready. Please try again.");
+      return;
+    }
+
+    const response = await fetch("https://pixeled.onrender.com/signin", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const dbUser = await response.json();
+    console.log("User from postgres:", dbUser);
+    navigate("/dashboard");
   };
 
   return (
@@ -116,6 +150,18 @@ export default function SignIn() {
               className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-400/60 focus:border-transparent transition"
             />
           </div>
+
+          {showOtpInput && (
+            <div>
+              <p>Check your email for a verification code</p>
+              <input
+                type="text"
+                placeholder="Enter OTP"
+                onChange={(e) => setOtpCode(e.target.value)}
+              />
+              <button onClick={() => handleOtpSubmit(otpCode)}>Verify</button>
+            </div>
+          )}
 
           {/*Button */}
           <button
