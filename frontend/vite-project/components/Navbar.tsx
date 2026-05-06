@@ -29,7 +29,7 @@ const Navbar = () => {
           {navLinks.map((link) => (
             <a
               key={link}
-              href={`#${link.toLowerCase().replace(/\s/g, "-")}`}
+              href={`${link.toLowerCase().replace(/\s/g, "-")}`}
               className="text-sm text-zinc-400 hover:text-white transition-colors duration-200"
             >
               {link}
@@ -48,9 +48,9 @@ const Navbar = () => {
 
             <Link to="/auth/signup">
               <button
-                className="px-5 py-2 text-sm font-medium rounded-full text-black 
-                bg-gradient-to-r from-amber-300 to-amber-500 
-                shadow-[0_8px_25px_rgba(245,158,11,0.35)] 
+                className="px-5 py-2 text-sm font-medium rounded-full text-black
+                bg-gradient-to-r from-amber-300 to-amber-500
+                shadow-[0_8px_25px_rgba(245,158,11,0.35)]
                 hover:scale-[1.05] hover:brightness-110 transition-all duration-200"
               >
                 Create Account
@@ -59,11 +59,11 @@ const Navbar = () => {
           </SignedOut>
 
           <SignedIn>
-            <Link to="/editor/image">
+            <Link to="/editor">
               <button
-                className="px-5 py-2 text-sm font-medium rounded-full text-black 
-                bg-gradient-to-r from-amber-300 to-amber-500 
-                shadow-[0_8px_25px_rgba(245,158,11,0.35)] 
+                className="px-5 py-2 text-sm font-medium rounded-full text-black
+                bg-gradient-to-r from-amber-300 to-amber-500
+                shadow-[0_8px_25px_rgba(245,158,11,0.35)]
                 hover:scale-[1.05] hover:brightness-110 transition-all duration-200"
               >
                 Go to Editor
@@ -72,8 +72,8 @@ const Navbar = () => {
 
             <SignOutButton>
               <button
-                className="px-4 py-2 text-sm rounded-full border border-white/10 
-                text-zinc-400 hover:text-red-300 hover:border-red-400/30 
+                className="px-4 py-2 text-sm rounded-full border border-white/10
+                text-zinc-400 hover:text-red-300 hover:border-red-400/30
                 transition-all duration-200"
               >
                 Log Out

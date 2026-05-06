@@ -86,7 +86,7 @@ export default function SignIn() {
 
     const dbUser = await response.json();
     console.log("User from postgres:", dbUser);
-    navigate("/dashboard");
+    navigate("/editor");
   };
 
   return (

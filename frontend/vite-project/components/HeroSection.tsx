@@ -50,7 +50,7 @@ const HeroSection = () => {
         className="mt-10 flex flex-wrap items-center justify-center gap-4"
       >
         <Link
-          to="/editor/image"
+          to="/editor"
           className="inline-flex items-center rounded-full px-10 py-4 text-base font-semibold text-primary-foreground bg-gradient-to-b from-gold-soft to-gold transition-transform duration-200 hover:scale-105 hover:brightness-110 glow-gold"
         >
           Get Started
