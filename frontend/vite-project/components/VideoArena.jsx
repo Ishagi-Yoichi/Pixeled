@@ -349,6 +349,7 @@ export default function VideoArena() {
         <img src={heroSky} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/65" />
       </div>
+      <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.03] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:80px_80px]" />
 
       <div className="max-w-5xl mx-auto px-6 pt-16 pb-16">
         {/* Heading */}

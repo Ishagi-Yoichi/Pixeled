@@ -183,15 +183,15 @@ export default function EditorPage() {
             "
           >
             {/* Glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-400/5 to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-400/5 to-transparent opacity-0 group-hover:opacity-100 transition duration-500" />
 
             <div className="relative z-10">
               <div
                 className="
                 w-14 h-14 rounded-2xl
-                bg-gradient-to-br from-orange-300 to-amber-500
+                bg-gradient-to-br from-gold-soft to-gold
                 flex items-center justify-center
-                shadow-[0_10px_30px_rgba(251,146,60,0.25)]
+                shadow-[0_10px_30px_rgba(245,158,11,0.35)]
               "
               >
                 <ImageIcon className="w-7 h-7 text-black" />
@@ -234,8 +234,8 @@ export default function EditorPage() {
                     rounded-full
                     text-sm font-medium
                     text-black
-                    bg-gradient-to-r from-orange-300 to-amber-500
-                    shadow-[0_8px_25px_rgba(251,146,60,0.25)]
+                    bg-gradient-to-r from-gold-soft to-gold
+                    shadow-[0_8px_25px_rgba(245,158,11,0.35)]
                     hover:scale-[1.03]
                     transition-all duration-300
                   "

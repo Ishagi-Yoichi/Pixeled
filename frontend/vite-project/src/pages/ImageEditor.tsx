@@ -175,43 +175,47 @@ const ImageEditor = () => {
   }, [image, isExporting, waitForDownloadUrl]);
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
-      <EditorHeader
-        onExport={image.src ? handleExport : undefined}
-        isExporting={isExporting}
-      />
+    <div className="relative h-screen overflow-hidden bg-background">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:80px_80px]" />
 
-      {!image.src ? (
-        <div className="flex-1 flex items-center justify-center p-8">
-          <ImageUpload onFileLoad={handleFileLoad} />
-        </div>
-      ) : (
-        <div className="flex-1 flex min-h-0">
-          {/* Tools Panel */}
-          <ToolsPanel
-            image={image}
-            updateImage={updateImage}
-            onResetToOriginal={resetToOriginal}
-          />
+      <div className="relative z-10 h-full flex flex-col">
+        <EditorHeader
+          onExport={image.src ? handleExport : undefined}
+          isExporting={isExporting}
+        />
 
-          {/* Canvas */}
-
-          <div className="flex-1 min-w-0">
-            <ImageCanvas
-              image={image}
-              canvasRef={canvasRef as RefObject<HTMLCanvasElement>}
-            />
-            {exportStatus && (
-              <div className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded bg-black/80 px-4 py-2 text-xs text-white shadow-lg">
-                {exportStatus}
-              </div>
-            )}
+        {!image.src ? (
+          <div className="flex-1 flex items-center justify-center p-8">
+            <ImageUpload onFileLoad={handleFileLoad} />
           </div>
+        ) : (
+          <div className="flex-1 flex min-h-0">
+            {/* Tools Panel */}
+            <ToolsPanel
+              image={image}
+              updateImage={updateImage}
+              onResetToOriginal={resetToOriginal}
+            />
 
-          {/* Properties Panel */}
-          <PropertiesPanel image={image} updateImage={updateImage} />
-        </div>
-      )}
+            {/* Canvas */}
+
+            <div className="flex-1 min-w-0">
+              <ImageCanvas
+                image={image}
+                canvasRef={canvasRef as RefObject<HTMLCanvasElement>}
+              />
+              {exportStatus && (
+                <div className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded bg-black/80 px-4 py-2 text-xs text-white shadow-lg">
+                  {exportStatus}
+                </div>
+              )}
+            </div>
+
+            {/* Properties Panel */}
+            <PropertiesPanel image={image} updateImage={updateImage} />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
