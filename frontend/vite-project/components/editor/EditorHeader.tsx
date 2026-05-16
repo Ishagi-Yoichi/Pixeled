@@ -4,11 +4,13 @@ import React from "react";
 interface EditorHeaderProps {
   onExport?: () => void;
   title?: string;
+  isExporting?: boolean;
 }
 
 const EditorHeader = ({
   onExport,
   title = "Image Editor",
+  isExporting = false,
 }: EditorHeaderProps) => {
   return (
     <header
@@ -33,10 +35,11 @@ const EditorHeader = ({
       {onExport && (
         <button
           onClick={onExport}
-          className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold text-primary-foreground bg-gradient-to-b from-gold-soft to-gold transition-transform duration-200 hover:scale-105 hover:brightness-110 glow-gold"
+          disabled={isExporting}
+          className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold text-primary-foreground bg-gradient-to-b from-gold-soft to-gold transition-transform duration-200 hover:scale-105 hover:brightness-110 glow-gold disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
         >
           <Download size={14} />
-          Download
+          {isExporting ? "Processing..." : "Download"}
         </button>
       )}
     </header>

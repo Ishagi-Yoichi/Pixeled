@@ -4,6 +4,11 @@ import {
   Sparkles,
   Maximize2,
   FileDown,
+  FlipHorizontal,
+  FlipVertical,
+  Sun,
+  Contrast,
+  Droplets,
 } from "lucide-react";
 import type { ImageState } from "../../src/pages/ImageEditor";
 import {
@@ -58,24 +63,67 @@ const ToolsPanel = ({
             }
           />
         </div>
+        <div className="mt-2 flex gap-2">
+          <ToolButton
+            icon={<FlipHorizontal size={16} />}
+            label="Flip X"
+            active={image.flipHorizontal}
+            onClick={() =>
+              updateImage({ flipHorizontal: !image.flipHorizontal })
+            }
+          />
+          <ToolButton
+            icon={<FlipVertical size={16} />}
+            label="Flip Y"
+            active={image.flipVertical}
+            onClick={() => updateImage({ flipVertical: !image.flipVertical })}
+          />
+        </div>
       </Section>
 
       {/* Enhancement */}
       <Section title="Enhance">
-        <div className="flex items-center gap-2">
-          <Sparkles size={14} className="text-primary shrink-0" />
+        <RangeControl
+          icon={<Sparkles size={14} className="text-primary shrink-0" />}
+          label="Sharp"
+          value={image.sharpness}
+          min={0}
+          max={200}
+          onChange={(sharpness) => updateImage({ sharpness })}
+        />
+        <RangeControl
+          icon={<Droplets size={14} className="text-primary shrink-0" />}
+          label="Blur"
+          value={image.blur}
+          min={0}
+          max={50}
+          onChange={(blur) => updateImage({ blur })}
+        />
+        <RangeControl
+          icon={<Sun size={14} className="text-primary shrink-0" />}
+          label="Bright"
+          value={image.brightness}
+          min={10}
+          max={200}
+          onChange={(brightness) => updateImage({ brightness })}
+        />
+        <RangeControl
+          icon={<Contrast size={14} className="text-primary shrink-0" />}
+          label="Contrast"
+          value={image.contrast}
+          min={10}
+          max={200}
+          onChange={(contrast) => updateImage({ contrast })}
+        />
+        <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
           <input
-            type="range"
-            min={0}
-            max={200}
-            value={image.sharpness}
-            onChange={(e) => updateImage({ sharpness: Number(e.target.value) })}
-            className="flex-1 accent-primary h-1"
+            type="checkbox"
+            checked={image.grayscale}
+            onChange={(e) => updateImage({ grayscale: e.target.checked })}
+            className="accent-primary"
           />
-          <span className="text-xs text-muted-foreground w-8 text-right font-mono">
-            {image.sharpness}
-          </span>
-        </div>
+          Grayscale
+        </label>
       </Section>
 
       {/* Resize */}
@@ -203,18 +251,54 @@ const ToolButton = ({
   icon,
   label,
   onClick,
+  active = false,
 }: {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
+  active?: boolean;
 }) => (
   <button
     onClick={onClick}
-    className="flex-1 flex flex-col items-center gap-1 py-2 rounded-lg bg-muted/30 hover:bg-muted/60 text-foreground transition-colors"
+    className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-lg text-foreground transition-colors ${
+      active ? "bg-primary/30" : "bg-muted/30 hover:bg-muted/60"
+    }`}
   >
     {icon}
     <span className="text-[10px] text-muted-foreground">{label}</span>
   </button>
+);
+
+const RangeControl = ({
+  icon,
+  label,
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (v: number) => void;
+}) => (
+  <div className="mb-2 flex items-center gap-2">
+    {icon}
+    <span className="w-12 text-[10px] text-muted-foreground">{label}</span>
+    <input
+      type="range"
+      min={min}
+      max={max}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className="min-w-0 flex-1 accent-primary h-1"
+    />
+    <span className="text-xs text-muted-foreground w-8 text-right font-mono">
+      {value}
+    </span>
+  </div>
 );
 
 const DimInput = ({

@@ -37,6 +37,10 @@ const PropertiesPanel = ({ image, updateImage }: PropertiesPanelProps) => {
           />
           <Row label="Current" value={`${image.width} × ${image.height}`} />
           <Row label="Rotation" value={`${image.rotation}°`} />
+          <Row label="Brightness" value={`${image.brightness}%`} />
+          <Row label="Contrast" value={`${image.contrast}%`} />
+          <Row label="Blur" value={`${image.blur}`} />
+          <Row label="Grayscale" value={image.grayscale ? "On" : "Off"} />
           <Row label="Format" value={image.exportFormat.toUpperCase()} />
         </div>
       </div>

@@ -35,6 +35,15 @@ const ImageCanvas = ({ image, canvasRef }: ImageCanvasProps) => {
       ctx.save();
       ctx.translate(cw / 2, ch / 2);
       ctx.rotate(rad);
+      ctx.scale(image.flipHorizontal ? -1 : 1, image.flipVertical ? -1 : 1);
+      ctx.filter = [
+        image.grayscale ? "grayscale(1)" : "",
+        image.blur > 0 ? `blur(${image.blur / 10}px)` : "",
+        image.brightness !== 100 ? `brightness(${image.brightness}%)` : "",
+        image.contrast !== 100 ? `contrast(${image.contrast}%)` : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
       ctx.drawImage(
         img,
         -image.width / 2,
@@ -43,6 +52,7 @@ const ImageCanvas = ({ image, canvasRef }: ImageCanvasProps) => {
         image.height,
       );
       ctx.restore();
+      ctx.filter = "none";
 
       // Sharpening via unsharp mask approximation
       if (image.sharpness > 0) {
@@ -88,6 +98,12 @@ const ImageCanvas = ({ image, canvasRef }: ImageCanvasProps) => {
     image.width,
     image.height,
     image.sharpness,
+    image.grayscale,
+    image.blur,
+    image.brightness,
+    image.contrast,
+    image.flipHorizontal,
+    image.flipVertical,
     canvasRef,
   ]);
 
