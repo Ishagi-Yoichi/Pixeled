@@ -45,6 +45,12 @@ model Image {
   sharpness       Int            @default(0)
   exportFormat    String         @default("png")
   exportQuality   Int            @default(92)
+  grayscale       Boolean        @default(false)
+  blur            Int            @default(0)
+  brightness      Int            @default(100)
+  contrast        Int            @default(100)
+  flipHorizontal  Boolean        @default(false)
+  flipVertical    Boolean        @default(false)
 
   // Relationships
   versions        ImageVersion[]

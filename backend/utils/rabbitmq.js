@@ -13,11 +13,15 @@ export async function connectRabbitMQ() {
 }
 //send msg to queue
 export async function sendToQueue(message) {
-  if (!channel) throw new Error("RabbitMQ not initialized!");
+  if (!channel) {
+    console.warn("RabbitMQ not initialized; image job remains pending.");
+    return false;
+  }
   channel.sendToQueue(QUEUE, Buffer.from(JSON.stringify(message)), {
     persistent: true,
   });
   console.log(" Sent to queue:", message);
+  return true;
 }
 //receive msg
 export async function receiveFromQueue(callback) {
