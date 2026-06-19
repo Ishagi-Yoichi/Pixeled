@@ -30,7 +30,7 @@ export default function EditorPage() {
     gsap.fromTo(
       cardsRef.current,
       {
-        opacity: 0,
+        opacity: 1,
         y: 40,
         filter: "blur(12px)",
       },
@@ -49,16 +49,16 @@ export default function EditorPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0b0b0c] text-white">
       {/* Ambient Glow */}
-      <div className="absolute top-[-200px] left-[-100px] w-[500px] h-[500px] bg-amber-500/10 blur-[140px] rounded-full" />
-      <div className="absolute bottom-[-200px] right-[-100px] w-[400px] h-[400px] bg-orange-400/10 blur-[120px] rounded-full" />
+      <div className="absolute top-[-200px] left-[-100px] w-[500px] h-[500px] bg-amber-500/19 blur-[140px] rounded-full" />
+      <div className="absolute bottom-[-200px] right-[-100px] w-[400px] h-[400px] bg-orange-400/20 blur-[120px] rounded-full" />
 
       {/* Grid Texture */}
-      <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-[size:80px_80px]" />
+      <div className="absolute inset-0 opacity-[0.09] bg-[linear-gradient(to_right,#ffffff_1px,transparent_1px),linear-gradient(to_bottom,#ffffff_1px,transparent_1px)] bg-size-[80px_80px]" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-24">
         {/* Hero */}
         <div ref={headingRef} className="text-center max-w-3xl mx-auto">
-          <p className="text-sm uppercase tracking-[0.25em] text-amber-300/80 mb-5">
+          <p className="text-sm uppercase tracking-[0.25em] text-amber-300/80 mb-5 -mt-15">
             Your Creative Workspace
           </p>
 
@@ -80,7 +80,7 @@ export default function EditorPage() {
         </div>
 
         {/* Cards */}
-        <div className="grid md:grid-cols-2 gap-6 mt-20">
+        <div className="grid md:grid-cols-2 gap-6 mt-15">
           {/* Video Editor */}
           <motion.div
             ref={(el) => {

@@ -16,12 +16,15 @@ export default function SignUp() {
   const [code, setCode] = useState("");
   const [pendingVerification, setPendingVerification] = useState(false);
   const [error, setError] = useState("");
+  const [isSigningUp, setIsSigningUp] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleSignUp = async (e: any) => {
     e.preventDefault();
     if (!isLoaded) return;
 
     setError("");
+    setIsSigningUp(true);
 
     try {
       await signUp.create({
@@ -36,6 +39,8 @@ export default function SignUp() {
       setPendingVerification(true);
     } catch (err: any) {
       setError(err.errors?.[0]?.message || "Something went wrong");
+    } finally {
+      setIsSigningUp(false);
     }
   };
 
@@ -44,6 +49,7 @@ export default function SignUp() {
     if (!isLoaded) return;
 
     setError("");
+    setIsVerifying(true);
 
     try {
       const result = await signUp.attemptEmailAddressVerification({
@@ -52,31 +58,32 @@ export default function SignUp() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        const token = await getToken();
 
-        const res = await fetch("https://pixeled.onrender.com/signup", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: email }),
+        navigate("/editor");
+
+        void (async () => {
+          const token = await getToken();
+          if (!token) {
+            console.error("Session token was not ready for post-signup sync.");
+            return;
+          }
+
+          await fetch("https://pixeled.onrender.com/signup", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+          });
+        })().catch((err) => {
+          console.error("Post-signup sync failed:", err);
         });
-
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          setError(
-            typeof data.error === "string"
-              ? data.error
-              : "Could not sync your account to the server. Try again.",
-          );
-          return;
-        }
-
-        navigate("/dashboard");
       }
-    } catch (err) {
+    } catch (err: any) {
       setError(err.errors?.[0]?.message || "Invalid verification code");
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -121,25 +128,28 @@ export default function SignUp() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+                disabled={isSigningUp}
+                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-400/60 disabled:cursor-not-allowed disabled:opacity-60"
               />
 
               <input
                 type="password"
-                placeholder="••••••••"
+                placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+                disabled={isSigningUp}
+                className="w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400/60 disabled:cursor-not-allowed disabled:opacity-60"
               />
 
               <button
                 type="submit"
+                disabled={isSigningUp}
                 className="w-full rounded-full px-6 py-3 font-semibold text-black
                 bg-gradient-to-r from-amber-300 to-amber-500
                 shadow-[0_10px_30px_rgba(245,158,11,0.4)]
-                hover:scale-[1.03] transition"
+                hover:scale-[1.03] transition disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
               >
-                Continue
+                {isSigningUp ? "Sending Code..." : "Continue"}
               </button>
             </form>
           </>
@@ -164,17 +174,19 @@ export default function SignUp() {
                 placeholder="Enter verification code"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className="w-full text-center tracking-widest text-lg rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+                disabled={isVerifying}
+                className="w-full text-center tracking-widest text-lg rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-amber-400/60 disabled:cursor-not-allowed disabled:opacity-60"
               />
 
               <button
                 type="submit"
+                disabled={isVerifying}
                 className="w-full rounded-full px-6 py-3 font-semibold text-black
                 bg-gradient-to-r from-amber-300 to-amber-500
                 shadow-[0_10px_30px_rgba(245,158,11,0.4)]
-                hover:scale-[1.03] transition"
+                hover:scale-[1.03] transition disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
               >
-                Verify & Continue
+                {isVerifying ? "Verifying..." : "Verify & Continue"}
               </button>
             </form>
           </>

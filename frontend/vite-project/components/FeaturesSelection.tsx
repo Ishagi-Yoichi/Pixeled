@@ -1,17 +1,17 @@
 import { motion } from "framer-motion";
-import { Brain, Focus, CheckCircle } from "lucide-react";
+import { Brain, Focus, CheckCircle, Files } from "lucide-react";
 import React from "react";
 
 const features = [
   {
-    icon: Brain,
-    title: "AI Thought Structuring",
-    description: "Convert chaos into structured clarity instantly.",
+    icon: Files,
+    title: "Enriched Features",
+    description: "Single platform for all of your Edits.",
   },
   {
     icon: Focus,
-    title: "Deep Focus Mode",
-    description: "Distraction-free thinking environment.",
+    title: "No Quality compromise",
+    description: "Get the highest quality for your media.",
   },
   {
     icon: CheckCircle,
